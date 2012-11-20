@@ -13,7 +13,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-> {-# LANGUAGE CPP #-}
+> {-# LANGUAGE CPP, DoRec #-}
 > module Eval (Target(..), Stem(..), eval, evalNoMeta, Eval.isStale, substituteStem) where
 >
 > import Parse
@@ -143,8 +143,8 @@ following places:
 > eval :: Map String (Seq String) -> Mkfile -> IO (Seq (Stem -> Rule IO Target))
 > eval cmdline mkfile = evalStateT (init >> go) (cmdline, Map.empty)
 >     where init = addVariable Export "MKSHELL" (Seq.singleton defaultShell)
->           go = mdo (rules, RevAppend virtuals) <- runWriterT (eval' virtuals mkfile)
->                    return rules
+>           go = do rec (rules, RevAppend virtuals) <- runWriterT (eval' virtuals mkfile)
+>                   return rules
 >
 > eval' virtuals (Mkrule ts flags ps r cont) = do
 >   flagsv <- evalFlags flags
